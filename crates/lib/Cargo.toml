@@ -13,5 +13,5 @@ version.workspace = true
 workspace = true
 
 [dependencies]
-minijinja = "2.10.2"
+minijinja = "2.11.0"
 serde = "1.0"
