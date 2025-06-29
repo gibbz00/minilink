@@ -13,7 +13,7 @@ dependencies = [
 
 [[package]]
 name = "minilink"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "minijinja",
  "serde",
@@ -21,7 +21,7 @@ dependencies = [
 
 [[package]]
 name = "minilink-tests"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "minilink",
 ]
