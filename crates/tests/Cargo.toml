@@ -1,0 +1,17 @@
+[package]
+name = "minilink-tests"
+
+authors.workspace = true
+edition.workspace = true
+exclude.workspace = true
+license.workspace = true
+publish = false
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[build-dependencies]
+minilink.workspace = true

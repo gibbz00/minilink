@@ -1,0 +1,17 @@
+[package]
+name = "minilink"
+
+authors.workspace = true
+edition.workspace = true
+exclude.workspace = true
+license.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+minijinja = "2.10.2"
+serde = { version = "1.0", features = ["derive"] }
