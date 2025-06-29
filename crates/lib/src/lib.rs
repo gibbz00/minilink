@@ -85,20 +85,20 @@ pub fn include_template(path_in: impl AsRef<std::path::Path>, name_out: &str) {
 }
 
 fn template_impl(path_in: &std::path::Path, name_out: &str, add_immediately: bool) {
-    println!("cargo::rerun-if-changed={}", path_in.display());
+    println!("cargo:rerun-if-changed={}", path_in.display());
 
     let linker_script_in = std::fs::read_to_string(path_in).expect("failed to read input linker script");
 
     let linker_script_out = process(&linker_script_in).expect("failed to process linker script template");
 
     let out_dir = std::env::var("OUT_DIR").expect("target output directory not found");
-    println!("cargo::rustc-link-search={out_dir}");
+    println!("cargo:rustc-link-search={out_dir}");
 
     if add_immediately {
         // Linkers treat an unknown format as a linker script. Doing this over
         // rustc-link-arg=-T allows the script to also be passed to dependant
         // crates, opposed to only the crate being built.
-        println!("cargo::rustc-link-lib=dylib:+verbatim={name_out}");
+        println!("cargo:rustc-link-lib=dylib:+verbatim={name_out}");
     }
 
     let path_out = std::path::Path::new(&out_dir).join(name_out);
