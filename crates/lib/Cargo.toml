@@ -13,9 +13,18 @@ readme.workspace = true
 repository.workspace = true
 version.workspace = true
 
+[features]
+minijinja-defaults = [
+  "minijinja/adjacent_loop_items",
+  "minijinja/builtins",
+  "minijinja/debug",
+  "minijinja/macros",
+  "minijinja/multi_template",
+]
+
 [lints]
 workspace = true
 
 [dependencies]
-minijinja = "2.11.0"
+minijinja = { version = "2.11.0", default-features = false, features = ["deserialization", "serde", "std_collections"] }
 serde = "1.0"

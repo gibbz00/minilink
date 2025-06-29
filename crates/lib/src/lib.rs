@@ -54,6 +54,10 @@
 //!  }
 //! }
 //! ```
+//!
+//! # Features
+//!
+//! - `minijinja-defaults`: Re-enables non-critical yet default minijinja features.
 
 use std::error::Error;
 
