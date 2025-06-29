@@ -9,7 +9,7 @@ exclude = ["/.github"]
 license = "Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/gibbz00/minilink"
-version = "0.1.1"
+version = "0.2.0"
 
 [workspace.dependencies]
 minilink = { path = "./crates/lib" }
