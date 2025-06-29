@@ -1,46 +1,76 @@
-//! # Minilink
+//! # Minilink - In search of better linker script composition
 //!
 //! Template linker scripts with a conditional compilation context.
+//!
+//! More specifically, it uses `minijinja` for templating within build scripts. Linker scripts may
+//! templated and added to the linker script search path with [`register_template`]. Scripts may
+//! alternatively be added directly by using [`include_template`], bypassing the need to manually
+//! configure `-T` link arguments.
+//!
+//! Note that these function should only be called within `build.rs` scripts. Not only are errors
+//! handled with `expect`, but `println!` statements are used for emitting cargo build instructions.
+//!
+//! ## Minijinja Environment
+//!
+//! The minijinja render environment contains the following context entries:
+//!
+//! - `cfg`: Map of all registered configuration options for the package being built. Names are
+//!   lower cased. Values may be lists or singular strings. `true` cfg features are represented as
+//!   empty strings (`""`) since Cargo does not create `CARGO_CFG_<cfg>` environment variables for
+//!   boolean features whose values are `false`.
+//!
+//! The following custom functions also registered:
+//!
+//! - `contains(<cfg_key>, <value>)`: Covers the case when a map value may be either a singular
+//!   string or a list of strings. For example; `contains(cfg.feature, "alloc")` works when there is
+//!   only one feature (i.e. `cfg = "alloc"`), or multiple (e.g. `cfg = ["alloc", "std"]`).
+//!
+//! # Example
+//!
+//! The a templated linker script in `./ld/test.in.ld`:
+//!
+//! ```ld
+//! SECTIONS {
+//!  .text : {
+//!    {% if contains(cfg.feature, "some_feature") %}
+//!    __feature = .;
+//!    {% endif %}
+//!  }
+//! }
+//! ```
+//!
+//! Can be registered in a `build.rs` with:
+//!
+//! ```ignore
+//! minilink::register_template("./ld/test.in.ld", "test.ld");
+//! ```
+//!
+//! Which in turn produces a `$OUT_DIR/test.ld` containing:
+//!
+//! ```ld
+//! SECTIONS {
+//!  .text : {
+//!    __feature = .;
+//!  }
+//! }
+//! ```
 
 use std::{collections::HashMap, error::Error};
 
-/// Register a `minijinja` templated linker script
+/// Register a templated linker script
 ///
-/// The script is only added to the link search path, which means that it must
-/// be included by the build script of the final application. This allows the
-/// application developers to control the order in which linker scripts are
-/// combined. The recommended way of doing so would be to create a `linkall.ld`
-/// script which uses the `INCLUDE` command to pull in the scrips in the
-/// desired order. This script is then passed to [`include_template`].
+/// See crate level documentation for an introduction.
 ///
-/// Note that the script should only be called in `build.rs` scripts. Not only
-/// are errors handled with `expect`, but `println!` statements are called for
-/// emitting cargo build instructions.
+/// Unless an absolute template input file path is provided, it will be relative to the cargo
+/// package manifest (e.g Cargo.toml).
 ///
-/// Adds `rerun-if-changed` to the input template, and an `rustc-link-search` for the output
-/// location of the processed linker script. The `name_out` parameter is used to create the
-/// output file name `<crate-name>_<name_out>` placed in `$OUT_DIR`. `<crate_name>` is retrieved
-/// through the `CARGO_PKG_NAME` environment variable.
-///
-/// ## Minijinja context
-///
-/// Contains the following entries:
-///
-/// - `cfg`: Map of all registered configuration options for the package being built. Names are
-///   lower cased. Values may be lists or singular strings. `true` cfg features are represented as
-///   empty strings (""). (Cargo does not create `CARGO_CFG_<cfg>` environment variables for boolean
-///   features whose values are `false`.)
-///
-/// And custom functions:
-///
-/// - `contains(<cfg_key>, <value>)`: ex. `contains(cfg.feature, "alloc")`
+/// Note that the output linker script must be explicitly included by the final since it is only
+/// added to the linker script search path. This allows application developers to control the
+/// order in which linker scripts are combined. The recommended way of doing so would be to create a
+/// `linkall.ld` script which uses the `INCLUDE` command to pull in the scrips in the
+/// desired order. `linkall.ld` could in turn be passed to [`include_template`].
 pub fn register_template(path_in: impl AsRef<std::path::Path>, name_out: &str) {
-    template_impl(path_in.as_ref(), name_out, false, true);
-}
-
-/// Like [`register_template`] but without the crate name prefixed to the output linker script name
-pub fn register_template_without_prefix(path_in: impl AsRef<std::path::Path>, name_out: &str) {
-    template_impl(path_in.as_ref(), name_out, true, false);
+    template_impl(path_in.as_ref(), name_out, false);
 }
 
 /// Like [`register_template`], but the templates are included immediatedly
@@ -48,10 +78,10 @@ pub fn register_template_without_prefix(path_in: impl AsRef<std::path::Path>, na
 /// This removes the need to exclicitly include it in downstream crates, but
 /// also the ability control the linker script order.
 pub fn include_template(path_in: impl AsRef<std::path::Path>, name_out: &str) {
-    template_impl(path_in.as_ref(), name_out, true, true);
+    template_impl(path_in.as_ref(), name_out, true);
 }
 
-fn template_impl(path_in: &std::path::Path, name_out: &str, add_immediatedly: bool, prefix_crate_name: bool) {
+fn template_impl(path_in: &std::path::Path, name_out: &str, add_immediatedly: bool) {
     println!("cargo::rerun-if-changed={}", path_in.display());
 
     let linker_script_in = std::fs::read_to_string(path_in).expect("failed to read input linker script");
@@ -61,22 +91,14 @@ fn template_impl(path_in: &std::path::Path, name_out: &str, add_immediatedly: bo
     let out_dir = std::env::var("OUT_DIR").expect("target output directory not found");
     println!("cargo::rustc-link-search={out_dir}");
 
-    let linker_script_name = match prefix_crate_name {
-        true => {
-            let crate_name = std::env::var("CARGO_PKG_NAME").expect("failed to retrieve cargo package name");
-            format!("{crate_name}_{name_out}")
-        }
-        false => name_out.to_owned(),
-    };
-
     if add_immediatedly {
-        // linkers treat an unknown format as a linker script, doing this
-        // over rustc-link-arg=-T allows the script inclusion to dependant
-        // crates
-        println!("cargo::rustc-link-lib=dylib:+verbatim={linker_script_name}");
+        // Linkers treat an unknown format as a linker script. Doing this over
+        // rustc-link-arg=-T allows the script to also be passed to dependant
+        // crates, opposed to only the crate being built.
+        println!("cargo::rustc-link-lib=dylib:+verbatim={name_out}");
     }
 
-    let path_out = std::path::Path::new(&out_dir).join(linker_script_name);
+    let path_out = std::path::Path::new(&out_dir).join(name_out);
 
     std::fs::write(path_out, linker_script_out)
         .expect("unable to write process linker script to target output directory");

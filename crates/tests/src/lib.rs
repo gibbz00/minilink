@@ -11,8 +11,7 @@ mod tests {
 
     #[test]
     fn templates_linker_script() {
-        let linker_script = include_str!(concat!(env!("OUT_DIR"), "/", env!("CARGO_PKG_NAME"), "_test.ld"));
-
+        let linker_script = include_str!(concat!(env!("OUT_DIR"), "/test.ld"));
         assert_eq!(EXPECTED, linker_script)
     }
 }
