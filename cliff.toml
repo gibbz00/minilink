@@ -2,7 +2,7 @@
 trim = true
 
 postprocessors = [
-  { pattern = '\$REPO', replace = "https://github.com/gibbz00/esprelse" },
+  { pattern = '\$REPO', replace = "https://github.com/gibbz00/minilink" },
 ]
 
 header = """
@@ -71,5 +71,5 @@ commit_parsers = [
   { message = "^test", group = "Test", skip = true },
 ]
 commit_preprocessors = [
-  { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](https://github.com/gibbz00/esprelse/issues/${2}))" },
+  { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "([#${2}](https://github.com/gibbz00/minilink/issues/${2}))" },
 ]

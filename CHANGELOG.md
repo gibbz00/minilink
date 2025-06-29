@@ -6,4 +6,4 @@ The format is inspired by the latest version of [Keep a Changelog](https://keepa
 
 ### Fixed
 
-- Switch to the old single colon syntax for build script instructions - ([22e05a1](https://github.com/gibbz00/esprelse/commit/22e05a1752c84bfa503ed5f5ae5098e0d5a06ddd)) - gibbz00
+- Switch to the old single colon syntax for build script instructions - ([cc23650](https://github.com/gibbz00/minilink/commit/cc23650d8063ffbd39724c97777853612d9624ec)) - gibbz00
