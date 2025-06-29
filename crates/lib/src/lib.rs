@@ -76,7 +76,7 @@ pub fn register_template(path_in: impl AsRef<std::path::Path>, name_out: &str) {
     template_impl(path_in.as_ref(), name_out, false);
 }
 
-/// Like [`register_template`], but the templates are included immediatedly
+/// Like [`register_template`], but the templates are included immediately
 ///
 /// This removes the need to exclicitly include it in downstream crates, but
 /// also the ability control the linker script order.
@@ -84,7 +84,7 @@ pub fn include_template(path_in: impl AsRef<std::path::Path>, name_out: &str) {
     template_impl(path_in.as_ref(), name_out, true);
 }
 
-fn template_impl(path_in: &std::path::Path, name_out: &str, add_immediatedly: bool) {
+fn template_impl(path_in: &std::path::Path, name_out: &str, add_immediately: bool) {
     println!("cargo::rerun-if-changed={}", path_in.display());
 
     let linker_script_in = std::fs::read_to_string(path_in).expect("failed to read input linker script");
@@ -94,7 +94,7 @@ fn template_impl(path_in: &std::path::Path, name_out: &str, add_immediatedly: bo
     let out_dir = std::env::var("OUT_DIR").expect("target output directory not found");
     println!("cargo::rustc-link-search={out_dir}");
 
-    if add_immediatedly {
+    if add_immediately {
         // Linkers treat an unknown format as a linker script. Doing this over
         // rustc-link-arg=-T allows the script to also be passed to dependant
         // crates, opposed to only the crate being built.
