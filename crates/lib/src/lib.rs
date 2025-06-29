@@ -55,7 +55,10 @@
 //! }
 //! ```
 
-use std::{collections::HashMap, error::Error};
+use std::error::Error;
+
+mod context;
+pub(crate) use context::{LinkerTemplateContext, TemplateContextCfg};
 
 /// Register a templated linker script
 ///
@@ -104,7 +107,7 @@ fn template_impl(path_in: &std::path::Path, name_out: &str, add_immediatedly: bo
         .expect("unable to write process linker script to target output directory");
 }
 
-pub(crate) fn process(linker_script_in: &str) -> Result<String, Box<dyn Error>> {
+fn process(linker_script_in: &str) -> Result<String, Box<dyn Error>> {
     let mut env = minijinja::Environment::new();
     // Indentation
     env.set_lstrip_blocks(true);
@@ -122,46 +125,10 @@ mod custom_functions {
 
     use crate::*;
 
-    pub fn contains(maybe_cfg: ViaDeserialize<Option<TemplateContextCfg>>, value: String) -> bool {
+    pub(crate) fn contains(maybe_cfg: ViaDeserialize<Option<TemplateContextCfg>>, value: String) -> bool {
         maybe_cfg.as_ref().is_some_and(|cfg| match cfg {
             TemplateContextCfg::Value(existing_value) => existing_value == &value,
             TemplateContextCfg::List(items) => items.contains(&value),
         })
-    }
-}
-
-#[derive(serde::Serialize)]
-struct LinkerTemplateContext {
-    cfg: HashMap<String, TemplateContextCfg>,
-}
-
-impl LinkerTemplateContext {
-    fn new() -> Self {
-        let cfg = std::env::vars()
-            .filter_map(|(name, value)| {
-                name.strip_prefix("CARGO_CFG_")
-                    .map(|name| (name.to_lowercase(), TemplateContextCfg::from_env_value(value)))
-            })
-            .collect();
-
-        Self { cfg }
-    }
-}
-
-#[derive(serde::Serialize, serde::Deserialize)]
-#[serde(untagged)]
-enum TemplateContextCfg {
-    Value(String),
-    List(Vec<String>),
-}
-
-impl TemplateContextCfg {
-    fn from_env_value(str_value: String) -> Self {
-        if str_value.contains(',') {
-            let values = str_value.split(',').map(ToOwned::to_owned).collect();
-            TemplateContextCfg::List(values)
-        } else {
-            TemplateContextCfg::Value(str_value)
-        }
     }
 }
