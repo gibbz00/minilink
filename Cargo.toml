@@ -3,10 +3,10 @@ members = ["crates/*"]
 resolver = "3"
 
 [workspace.package]
-authors = ["gibbz"]
+authors = ["gibbz00 <gabrielhansson00@gmail.com>"]
 edition = "2024"
 exclude = ["/.github"]
-license = "Apache v2.0"
+license = "Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/gibbz00/minilink"
 version = "0.1.0"

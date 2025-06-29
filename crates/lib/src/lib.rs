@@ -1,8 +1,8 @@
 //! # Minilink - In search of better linker script composition
 //!
-//! Template linker scripts with a conditional compilation context.
+//! Template and register linker scripts with Rust's conditional compilation flags in hand.
 //!
-//! More specifically, it uses `minijinja` for templating within build scripts. Linker scripts may
+//! More specifically, use `minijinja` for templating within build scripts. Linker scripts may
 //! templated and added to the linker script search path with [`register_template`]. Scripts may
 //! alternatively be added directly by using [`include_template`], bypassing the need to manually
 //! configure `-T` link arguments.
@@ -27,7 +27,7 @@
 //!
 //! # Example
 //!
-//! The a templated linker script in `./ld/test.in.ld`:
+//! The a templated linker script in `./ld/link.in.ld`:
 //!
 //! ```ld
 //! SECTIONS {
@@ -42,10 +42,10 @@
 //! Can be registered in a `build.rs` with:
 //!
 //! ```ignore
-//! minilink::register_template("./ld/test.in.ld", "test.ld");
+//! minilink::register_template("./ld/link.in.ld", "link.ld");
 //! ```
 //!
-//! Which in turn produces a `$OUT_DIR/test.ld` containing:
+//! Which in turn produces a `$OUT_DIR/link.ld` containing:
 //!
 //! ```ld
 //! SECTIONS {

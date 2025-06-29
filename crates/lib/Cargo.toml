@@ -1,6 +1,10 @@
 [package]
 name = "minilink"
 
+categories = ["config", "embedded"]
+description = "Template and register linker scripts"
+keywords = ["linker_script", "template"]
+
 authors.workspace = true
 edition.workspace = true
 exclude.workspace = true
