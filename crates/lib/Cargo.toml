@@ -26,5 +26,5 @@ minijinja-defaults = [
 workspace = true
 
 [dependencies]
-minijinja = { version = "2.11.0", default-features = false, features = ["deserialization", "serde", "std_collections"] }
+minijinja = { version = "2.14.0", default-features = false, features = ["deserialization", "serde", "std_collections"] }
 serde = "1.0"
