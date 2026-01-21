@@ -82,7 +82,7 @@ pub fn register_template(path_in: impl AsRef<std::path::Path>, name_out: &str) {
 
 /// Like [`register_template`], but the templates are included immediately
 ///
-/// This removes the need to exclicitly include it in downstream crates, but
+/// This removes the need to explicitly include it in downstream crates, but
 /// also the ability control the linker script order.
 pub fn include_template(path_in: impl AsRef<std::path::Path>, name_out: &str) {
     template_impl(path_in.as_ref(), name_out, true);
